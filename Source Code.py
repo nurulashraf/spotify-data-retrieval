@@ -1,14 +1,15 @@
 import requests
 import base64
 
-# Client ID and redirect URI
-CLIENT_ID = ''
-REDIRECT_URI = ''
+# Client ID and redirect URI - Replace with your Spotify Developer credentials
+CLIENT_ID = ''  # Your Spotify Client ID
+CLIENT_SECRET = ''  # Your Spotify Client Secret
+REDIRECT_URI = ''  # Your Spotify Redirect URI
 
 # Spotify Authorization URL
 AUTH_URL = 'https://accounts.spotify.com/authorize'
 
-# Authorization request URL
+# Authorization request parameters
 params = {
     'client_id': CLIENT_ID,
     'response_type': 'code',
@@ -16,26 +17,22 @@ params = {
     'scope': 'user-library-read playlist-read-private user-read-private user-read-email'
 }
 
+# Generate the authorization URL
 auth_request_url = f"{AUTH_URL}?{'&'.join(f'{k}={v}' for k, v in params.items())}"
 
+# Prompt the user to visit the authorization URL
 print("Please visit this URL and authorize the app:")
 print(auth_request_url)
 
-import requests
-import base64
+# Spotify API credentials and authorization code - Ensure `auth_code` is filled in after authorization
+auth_code = ''  # Replace with the authorization code obtained after visiting the URL
 
-# Spotify API credentials
-client_id = ' '
-client_secret = ''
-redirect_uri = ''
-auth_code = ''
-
-# Encode the client ID and client secret
-auth_str = f"{client_id}:{client_secret}"
+# Encode the Client ID and Client Secret for token exchange
+auth_str = f"{CLIENT_ID}:{CLIENT_SECRET}"
 auth_bytes = auth_str.encode('utf-8')
 auth_base64 = base64.b64encode(auth_bytes).decode('utf-8')
 
-# Exchange code for token
+# Exchange the authorization code for an access token
 auth_url = 'https://accounts.spotify.com/api/token'
 headers = {
     'Authorization': 'Basic ' + auth_base64,
@@ -44,55 +41,66 @@ headers = {
 data = {
     'grant_type': 'authorization_code',
     'code': auth_code,
-    'redirect_uri': redirect_uri
+    'redirect_uri': REDIRECT_URI
 }
 
+# Make the request to Spotify for the access token
 response = requests.post(auth_url, headers=headers, data=data)
+
+# Parse the access token from the response
 tokens = response.json()
-access_token = tokens['access_token']
+access_token = tokens.get('access_token')  # Ensure token retrieval
 
-# Function to get saved albums
+# Check if the token is retrieved successfully
+if not access_token:
+    print("Error: Unable to retrieve access token.")
+    exit()
+
+# Define functions to interact with the Spotify API
+
 def get_saved_albums():
+    """Fetch the user's saved albums."""
     endpoint = 'https://api.spotify.com/v1/me/albums'
-    headers = {
-        'Authorization': f'Bearer {access_token}'
-    }
-
+    headers = {'Authorization': f'Bearer {access_token}'}
     response = requests.get(endpoint, headers=headers)
     return response.json()
 
-# Function to get liked songs
 def get_liked_songs():
+    """Fetch the user's liked songs."""
     endpoint = 'https://api.spotify.com/v1/me/tracks'
-    headers = {
-        'Authorization': f'Bearer {access_token}'
-    }
-
+    headers = {'Authorization': f'Bearer {access_token}'}
     response = requests.get(endpoint, headers=headers)
     return response.json()
 
-# Function to get playlists
 def get_playlists():
+    """Fetch the user's playlists."""
     endpoint = 'https://api.spotify.com/v1/me/playlists'
-    headers = {
-        'Authorization': f'Bearer {access_token}'
-    }
-
+    headers = {'Authorization': f'Bearer {access_token}'}
     response = requests.get(endpoint, headers=headers)
     return response.json()
 
-# Fetch and display user data
+# Fetch and display the user's data
+
+# Display user's saved albums
 saved_albums = get_saved_albums()
-print("User's Saved Albums:")
-for album in saved_albums['items']:
-    print(f" - {album['album']['name']} by {', '.join(artist['name'] for artist in album['album']['artists'])}")
+print("\nUser's Saved Albums:")
+for album in saved_albums.get('items', []):
+    album_name = album['album']['name']
+    artists = ', '.join(artist['name'] for artist in album['album']['artists'])
+    print(f" - {album_name} by {artists}")
 
+# Display user's liked songs
 liked_songs = get_liked_songs()
-print("User's Liked Songs:")
-for song in liked_songs['items']:
-    print(f" - {song['track']['name']} by {', '.join(artist['name'] for artist in song['track']['artists'])}")
+print("\nUser's Liked Songs:")
+for song in liked_songs.get('items', []):
+    song_name = song['track']['name']
+    artists = ', '.join(artist['name'] for artist in song['track']['artists'])
+    print(f" - {song_name} by {artists}")
 
+# Display user's playlists
 playlists = get_playlists()
-print("User's Playlists:")
-for playlist in playlists['items']:
-    print(f" - {playlist['name']} (ID: {playlist['id']})")
+print("\nUser's Playlists:")
+for playlist in playlists.get('items', []):
+    playlist_name = playlist['name']
+    playlist_id = playlist['id']
+    print(f" - {playlist_name} (ID: {playlist_id})")
