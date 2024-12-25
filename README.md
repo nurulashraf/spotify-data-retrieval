@@ -1,4 +1,4 @@
-# Spotify Data Retrieval Project
+# Spotify Data Fetcher
 
 ## Overview
 This Python script allows users to retrieve their Spotify library data, including saved albums, liked songs, and playlists using the Spotify Web API.
