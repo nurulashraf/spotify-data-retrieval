@@ -26,7 +26,7 @@ A collection of Python scripts to interact with the Spotify Web API for retrievi
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/spotify-data-retrieval.git
+   git clone https://github.com/nurulashraf/spotify-data-retrieval.git
    cd spotify-data-retrieval
    ```
 
